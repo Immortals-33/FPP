@@ -3,18 +3,47 @@ import re
 import argparse
 import shutil
 
+
 def parse_args():
-    parser = argparse.ArgumentParser(description="Seperate fasta files into multiple folders.")
-    parser.add_argument("-i", "--input", required=True, help="Input folder containing original fasta files.")
-    parser.add_argument("-o", "--output", required=True, help="Output folder to store processed folders.")
-    parser.add_argument("-t", "--total", type=int, default=10000, help="Range of sample_number. Default is 10000.")
-    parser.add_argument("-n", "--number", type=int, required=True, help="Number of separating operations.")
+    parser = argparse.ArgumentParser(
+        description="Seperate fasta files into multiple folders."
+    )
+    parser.add_argument(
+        "-i",
+        "--input",
+        required=True,
+        help="Input folder containing original fasta files.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        required=True,
+        help="Output folder to store processed folders.",
+    )
+    parser.add_argument(
+        "-t",
+        "--total",
+        type=int,
+        default=10000,
+        help="Range of sample_number. Default is 10000.",
+    )
+    parser.add_argument(
+        "-n",
+        "--number",
+        type=int,
+        required=True,
+        help="Number of separating operations.",
+    )
 
     return parser.parse_args()
 
+
 # Helper function for natural sorting of file names
 def natural_sort_key(s):
-    return [int(text) if text.isdigit() else text.lower() for text in re.split(r'(\d+)', s)]
+    return [
+        int(text) if text.isdigit() else text.lower() for text in re.split(r"(\d+)", s)
+    ]
+
 
 def main():
     args = parse_args()
@@ -31,7 +60,11 @@ def main():
 
     fasta_files = [f for f in os.listdir(input_folder) if f.endswith(".fasta")]
 
-    filtered_fasta_files = [fasta_file for fasta_file in fasta_files if 1 <= get_sample_number(fasta_file) <= total_samples]
+    filtered_fasta_files = [
+        fasta_file
+        for fasta_file in fasta_files
+        if 1 <= get_sample_number(fasta_file) <= total_samples
+    ]
 
     filtered_fasta_files.sort(key=natural_sort_key)
 
@@ -51,6 +84,7 @@ def main():
 
                 if os.path.exists(src_path):
                     shutil.copy(src_path, dst_path)
+
 
 if __name__ == "__main__":
     main()

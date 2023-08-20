@@ -2,7 +2,10 @@ import argparse
 import re
 import os
 
-def extract_sequences(input_file, index_file, output_file=None, separate=False, output_dir=None):
+
+def extract_sequences(
+    input_file, index_file, output_file=None, separate=False, output_dir=None
+):
     # Read the index numbers from the index file
     with open(index_file, "r") as index_f:
         sample_numbers = set(map(int, index_f.read().split()))
@@ -51,13 +54,32 @@ def extract_sequences(input_file, index_file, output_file=None, separate=False, 
             for header, sequence in sequences.items():
                 output_f.write(f">{header}\n{sequence}\n")
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Extract sequences from a fasta file based on sample numbers in an index file")
-    parser.add_argument("-i", "--input", type=str, required=True, help="Input fasta file")
-    parser.add_argument("-n", "--index", type=str, required=True, help="Path to the index txt file")
-    parser.add_argument("-o", "--output", type=str, help="Name of the output fasta file")
-    parser.add_argument("-s", "--separate", action="store_true", help="Extract each sequence as a separate .fasta file")
-    parser.add_argument("-d", "--output_dir", type=str, help="Output directory for separate .fasta files")
+    parser = argparse.ArgumentParser(
+        description="Extract sequences from a fasta file based on sample numbers in an index file"
+    )
+    parser.add_argument(
+        "-i", "--input", type=str, required=True, help="Input fasta file"
+    )
+    parser.add_argument(
+        "-n", "--index", type=str, required=True, help="Path to the index txt file"
+    )
+    parser.add_argument(
+        "-o", "--output", type=str, help="Name of the output fasta file"
+    )
+    parser.add_argument(
+        "-s",
+        "--separate",
+        action="store_true",
+        help="Extract each sequence as a separate .fasta file",
+    )
+    parser.add_argument(
+        "-d",
+        "--output_dir",
+        type=str,
+        help="Output directory for separate .fasta files",
+    )
     args = parser.parse_args()
 
     input_file = args.input
@@ -67,4 +89,3 @@ if __name__ == "__main__":
     output_dir = args.output_dir
 
     extract_sequences(input_file, index_file, output_file, separate, output_dir)
-

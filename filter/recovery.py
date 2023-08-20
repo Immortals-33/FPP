@@ -1,6 +1,5 @@
-#Sequence Recovery calculating script
-#Written by @Immortals on August 9th, 2023
-#A first try on pathlib and typing module. Remember to modify the other filtering script later.
+# Sequence Recovery calculating script
+# Written by @Immortals on August 9th, 2023
 
 import argparse
 import logging
@@ -16,7 +15,7 @@ import biotite.sequence.io.fasta as fasta
 root_path = Path("/dssg/home/acct-clschf/clschf/zzq/ADS/filter/recovery")
 PathLike = T.Union[str, Path]
 
-'''
+"""
 Calculating sequence recovery between a reference sequence and a set of sequences, and filter them out, optionally.
 The input format can be either a multiple-sequences fasta file or a folder containing many single fasta files.
 
@@ -29,7 +28,8 @@ Usage:
 "-o", "--output": The name of result file, using this flag is strongly recommended. Default = "recovery.txt"
 "-s", "--seperate": This flag is used when input is a folder.
 "-t", "--threshold": Sequence recovery threshold. Sequences above this value would be kept, otherwise filtered out.
-'''
+"""
+
 
 def calculate_sequence_recovery(s1, s2):
     AA_alphabet = "ACDEFGHIKLMNPQRSTVWY-"
@@ -48,8 +48,10 @@ def calculate_sequence_recovery(s1, s2):
 
 def natural_sort_key(s: Path) -> List:
     return [
-        int(text) if text.isdigit() else text.lower() for text in re.split(r"(\d+)", s.name)
+        int(text) if text.isdigit() else text.lower()
+        for text in re.split(r"(\d+)", s.name)
     ]
+
 
 def create_parser():
     parser = argparse.ArgumentParser(description="Calculating Sequence Recovery")
@@ -61,9 +63,7 @@ def create_parser():
         help="Path to the input FASTA file or folder",
     )
     parser.add_argument(
-        "-o", "--output", type=Path, 
-        default= 'recovery.txt',
-        help="Output file name"
+        "-o", "--output", type=Path, default="recovery.txt", help="Output file name"
     )
     parser.add_argument(
         "-s",
@@ -116,7 +116,7 @@ def run(args):
 
         for fasta_path in sorted((fasta_files), key=natural_sort_key):
             single_seq = fasta.get_sequence(fasta.FastaFile.read(fasta_path))
-            sample_match = re.search(r"(\d+)",(fasta_path.stem))
+            sample_match = re.search(r"(\d+)", (fasta_path.stem))
             if sample_match:
                 sample_number = int(sample_match.group(1))
                 sample_numbers.append(sample_number)
