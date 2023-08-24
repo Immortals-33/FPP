@@ -19,25 +19,35 @@ Should be used right after `get_affinity.py`.
 
 
 parser = argparse.ArgumentParser(description="Generate affinity metrics CSV.")
-parser.add_argument("-i", "--input",required=True, help="Input JSON file name")
+parser.add_argument("-i", "--input", required=True, help="Input JSON file name")
 parser.add_argument("-o", "--output", default="test.csv", help="Output CSV file name")
-parser.add_argument("--order", choices=["highest", "lowest", "mean"], default="sample_number",
-                    help="Order results by highest, lowest, or mean affinity")
-parser.add_argument("-t", "--threshold", type=float, help="Threshold for mean affinity filtering")
-parser.add_argument("-q", "--quantile", type=int, choices=[25, 50, 75], help="Quantile value for affinity values")
+parser.add_argument(
+    "--order",
+    choices=["highest", "lowest", "mean"],
+    default="sample_number",
+    help="Order results by highest, lowest, or mean affinity",
+)
+parser.add_argument(
+    "-t", "--threshold", type=float, help="Threshold for mean affinity filtering"
+)
+parser.add_argument(
+    "-q",
+    "--quantile",
+    type=int,
+    choices=[25, 50, 75],
+    help="Quantile value for affinity values",
+)
 args = parser.parse_args()
 
-# Load the JSON data
 with open(args.input, "r") as json_file:
     data = json.load(json_file)
 
-# Initialize lists to store results
 sample_numbers = []
 highest_affinities = []
 lowest_affinities = []
 mean_affinities = []
 
-# Iterate through the data and calculate the metrics
+
 for sample_number, sample_data in data.items():
     affinities = sample_data["poses"].values()
     highest_affinity = max(affinities)
@@ -49,13 +59,15 @@ for sample_number, sample_data in data.items():
     lowest_affinities.append(lowest_affinity)
     mean_affinities.append(mean_affinity)
 
-# Create a DataFrame
-df = pd.DataFrame({
-    "Sample Number": sample_numbers,
-    "Highest Affinity": highest_affinities,
-    "Lowest Affinity": lowest_affinities,
-    "Mean Affinity": mean_affinities
-})
+df = pd.DataFrame(
+    {
+        "Sample Number": sample_numbers,
+        "Highest Affinity": highest_affinities,
+        "Lowest Affinity": lowest_affinities,
+        "Mean Affinity": mean_affinities,
+    }
+)
+
 
 def quantile_calculate(quantile):
     all_mean_affinities = []
@@ -74,8 +86,9 @@ def quantile_calculate(quantile):
     print(f"Mean affinity of {quantile}th percentile: {mean_quantile:.3f}.")
     print(f"Highest affinity of {quantile}th percentile: {highest_quantile:.3f}.")
     print(f"Lowest affinity of {quantile}th percentile: {lowest_quantile:.3f}.")
-    
-# Sort the DataFrame based on the specified order
+
+
+# Sort the DataFrame based on the specified order provided by user
 if args.order == "highest":
     df = df.sort_values(by="Highest Affinity", ascending=True)
 elif args.order == "lowest":
@@ -83,7 +96,6 @@ elif args.order == "lowest":
 elif args.order == "mean":
     df = df.sort_values(by="Mean Affinity", ascending=True)
 
-# Filter the DataFrame based on the threshold if provided
 if args.threshold is not None:
     df = df[df["Mean Affinity"] < args.threshold]
 
@@ -91,7 +103,6 @@ if args.quantile is not None:
     q = args.quantile
     quantile_calculate(q)
 
-# Write the DataFrame to a CSV file
 df.to_csv(args.output, index=False)
 
-print(f"CSV file '{args.output}' created.")
+print(f"CSV file '{args.output}' created. Check the results!")
