@@ -5,6 +5,7 @@ import re
 import warnings
 import logging
 import glob
+import json
 import csv
 from pathlib import Path
 from typing import *
@@ -32,7 +33,7 @@ You need to prepare the following steps for running this script:
 
 The script will output following things:
 1. A result file containing information of ligand(substrate)-RMSD and pocket(motif)-RMSD.
-*Function updated: You can specify the result to be either a CSV file or a TXT file.
+   Currently, the support format of outputfile includes txt, csv and json. 
 2. A filterID file containing samples' ID of which successfully pass the user-specified threshold.
 
 Usage:
@@ -131,7 +132,7 @@ def pocket_superimposition(
         u1.select_atoms("name C* or name P* or name O* and chainID d").positions,
         u2.select_atoms("name C* or name P* or name O* and chainID d").positions,
     )
-    return (rmsd_pocket, rmsd_ligand)
+    return round(rmsd_pocket, 3), round(rmsd_ligand, 3)
 
 
 def run(args):
@@ -195,8 +196,33 @@ def run(args):
                 out.write(
                     f"{sample_num}\t{ligand_num}\t{ligand_value}\t{pocket_value}\n"
                 )
+        elif output_file.suffix == ".json":
+            data_dict = {}
+            for sample_num, ligand_num, ligand_value, pocket_value in results:
+                pose_key = f"pose_{ligand_num}"
+                if sample_num not in data_dict:
+                    data_dict[sample_num] = {
+                        "poses": {},
+                        "mean_Ligand_RMSD": 0,
+                        "Pocket_RMSD": 0,
+                    }
+                data_dict[sample_num]["poses"][pose_key] = ligand_value
+                data_dict[sample_num]["Pocket_RMSD"] = pocket_value
+
+            for sample_num in data_dict:
+                sample_dict = data_dict[sample_num]
+                poses = sample_dict["poses"]
+                num_poses = len(poses)
+                if num_poses > 0:
+                    ligand_rmsd_sum = sum(poses[pose_key] for pose_key in poses)
+                    sample_dict["mean_Ligand_RMSD"] = round(
+                        ligand_rmsd_sum / num_poses, 3
+                    )
+
+            with output_file.open("w") as f:
+                json.dump(data_dict, f, indent=4)
         else:
-            raise ValueError("The format of output file must be either CSV of TXT!")
+            raise ValueError("The format of output file must be CSV, TXT or JSON!")
 
         if args.threshold and args.quantile:
             parser.error("Cannot use -t and -q flags simultaneously!")
